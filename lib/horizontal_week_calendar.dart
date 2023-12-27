@@ -1,6 +1,8 @@
 library horizontal_week_calendar;
 
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 
@@ -10,6 +12,8 @@ enum WeekStartFrom {
 }
 
 class HorizontalWeekCalendar extends StatefulWidget {
+  final DateTime disabledFromDate;
+
   /// week start from [WeekStartFrom.Monday]
   final WeekStartFrom? weekStartFrom;
 
@@ -78,6 +82,7 @@ class HorizontalWeekCalendar extends StatefulWidget {
     this.inactiveNavigatorColor,
     this.monthColor,
     this.weekStartFrom = WeekStartFrom.Monday,
+    required this.disabledFromDate,
   });
 
   @override
@@ -179,7 +184,7 @@ class _HorizontalWeekCalendarState extends State<HorizontalWeekCalendar> {
   // =================
 
   isNextDisabled() {
-    return listOfWeeks[currentWeekIndex].last.isBefore(DateTime.now());
+    return listOfWeeks[currentWeekIndex].last.isBefore(widget.disabledFromDate);
   }
 
   isCurrentYear() {
@@ -206,71 +211,32 @@ class _HorizontalWeekCalendarState extends State<HorizontalWeekCalendar> {
                     onTap: () {
                       onBackClick();
                     },
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.arrow_back_ios_new,
-                          size: 17,
-                          color:
-                              widget.activeNavigatorColor ?? theme.primaryColor,
-                        ),
-                        const SizedBox(
-                          width: 4,
-                        ),
-                        Text(
-                          "Back",
-                          style: theme.textTheme.bodyLarge!.copyWith(
-                            color: widget.activeNavigatorColor ??
-                                theme.primaryColor,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
+                    child: Icon(
+                      Icons.navigate_before_rounded,
+                      size: 40.sp,
+                      color: const Color(0xFF02012D),
                     ),
                   ),
                   Text(
-                    isCurrentYear()
-                        ? DateFormat('MMMM').format(
-                            currentWeek[0],
-                          )
-                        : DateFormat('MMMM yyyy').format(
-                            currentWeek[0],
-                          ),
-                    style: theme.textTheme.titleMedium!.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: widget.monthColor ?? theme.primaryColor,
-                    ),
-                  ),
+                      isCurrentYear()
+                          ? DateFormat('MMM, y').format(
+                              currentWeek[0],
+                            )
+                          : DateFormat('MMMM yyyy').format(
+                              currentWeek[0],
+                            ),
+                      style: GoogleFonts.outfit(
+                          fontSize: 18.sp, fontWeight: FontWeight.w500)),
                   GestureDetector(
                     onTap: isNextDisabled()
                         ? () {
                             onNextClick();
                           }
                         : null,
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Text(
-                          "Next",
-                          style: theme.textTheme.bodyLarge!.copyWith(
-                            color: isNextDisabled()
-                                ? theme.primaryColor
-                                : widget.inactiveNavigatorColor ?? Colors.grey,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(
-                          width: 4,
-                        ),
-                        Icon(
-                          Icons.arrow_forward_ios,
-                          size: 17,
-                          color: isNextDisabled()
-                              ? theme.primaryColor
-                              : widget.inactiveNavigatorColor ?? Colors.grey,
-                        ),
-                      ],
+                    child: Icon(
+                      Icons.navigate_next_rounded,
+                      size: 40.sp,
+                      color: const Color(0xFF02012D),
                     ),
                   ),
                 ],
@@ -284,9 +250,12 @@ class _HorizontalWeekCalendarState extends State<HorizontalWeekCalendar> {
                   if (listOfWeeks.isNotEmpty)
                     for (int ind = 0; ind < listOfWeeks.length; ind++)
                       Container(
+                        // margin: EdgeInsets.only(bottom: 10.h),
                         height: boxHeight,
+
                         width: withOfScreen,
-                        color: Colors.transparent,
+                        color: const Color(0xFFDDE9F7),
+                        // color: Colors.red,
                         child: Row(
                           children: [
                             for (int weekIndex = 0;
@@ -295,7 +264,7 @@ class _HorizontalWeekCalendarState extends State<HorizontalWeekCalendar> {
                               Expanded(
                                 child: GestureDetector(
                                   onTap: listOfWeeks[ind][weekIndex]
-                                          .isBefore(DateTime.now())
+                                          .isBefore(widget.disabledFromDate)
                                       ? () {
                                           onDateSelect(
                                             listOfWeeks[ind][weekIndex],
@@ -303,8 +272,33 @@ class _HorizontalWeekCalendarState extends State<HorizontalWeekCalendar> {
                                         }
                                       : null,
                                   child: Container(
+                                    margin: const EdgeInsets.only(right: 7),
                                     alignment: Alignment.center,
                                     decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(10.w),
+                                      boxShadow: const [
+                                        BoxShadow(
+                                          color: Color.fromRGBO(
+                                              111, 140, 176, 0.41),
+                                          offset: Offset(4, 4),
+                                          blurRadius: 20,
+                                          spreadRadius: 0,
+                                        ),
+                                        BoxShadow(
+                                          color: Color.fromRGBO(
+                                              255, 255, 255, 0.8),
+                                          offset: Offset(-6, -6),
+                                          blurRadius: 20,
+                                          spreadRadius: 0,
+                                        ),
+                                        BoxShadow(
+                                          color: Color.fromRGBO(
+                                              114, 142, 171, 0.1),
+                                          offset: Offset(2, 2),
+                                          blurRadius: 4,
+                                          spreadRadius: 0,
+                                        ),
+                                      ],
                                       color: DateFormat('dd-MM-yyyy').format(
                                                   listOfWeeks[ind]
                                                       [weekIndex]) ==
@@ -313,15 +307,16 @@ class _HorizontalWeekCalendarState extends State<HorizontalWeekCalendar> {
                                           ? widget.activeBackgroundColor ??
                                               theme.primaryColor
                                           : listOfWeeks[ind][weekIndex]
-                                                  .isBefore(DateTime.now())
+                                                  .isBefore(
+                                                      widget.disabledFromDate)
                                               ? widget.inactiveBackgroundColor ??
                                                   theme.primaryColor
                                                       .withOpacity(.2)
                                               : widget.disabledBackgroundColor ??
                                                   Colors.grey,
                                       border: Border.all(
-                                        color: theme.scaffoldBackgroundColor,
-                                      ),
+                                          width: 1,
+                                          color: const Color(0xFFD6E3F3)),
                                     ),
                                     child: Column(
                                       mainAxisAlignment:
@@ -334,8 +329,7 @@ class _HorizontalWeekCalendarState extends State<HorizontalWeekCalendar> {
                                             // "$weekIndex: ${listOfWeeks[ind][weekIndex] == DateTime.now()}",
                                             "${listOfWeeks[ind][weekIndex].day}",
                                             textAlign: TextAlign.center,
-                                            style: theme.textTheme.titleLarge!
-                                                .copyWith(
+                                            style: GoogleFonts.outfit(
                                               color: DateFormat('dd-MM-yyyy')
                                                           .format(listOfWeeks[
                                                                   ind]
@@ -345,14 +339,15 @@ class _HorizontalWeekCalendarState extends State<HorizontalWeekCalendar> {
                                                   ? widget.activeTextColor ??
                                                       Colors.white
                                                   : listOfWeeks[ind][weekIndex]
-                                                          .isBefore(
-                                                              DateTime.now())
+                                                          .isBefore(widget
+                                                              .disabledFromDate)
                                                       ? widget.inactiveTextColor ??
                                                           Colors.white
                                                               .withOpacity(.2)
                                                       : widget.disabledTextColor ??
                                                           Colors.white,
-                                              fontWeight: FontWeight.bold,
+                                              fontWeight: FontWeight.w400,
+                                              fontSize: 10.822.sp,
                                             ),
                                           ),
                                         ),
@@ -366,24 +361,25 @@ class _HorizontalWeekCalendarState extends State<HorizontalWeekCalendar> {
                                             listOfWeeks[ind][weekIndex],
                                           ),
                                           textAlign: TextAlign.center,
-                                          style: theme.textTheme.bodyLarge!
-                                              .copyWith(
-                                            color: DateFormat('dd-MM-yyyy')
-                                                        .format(listOfWeeks[ind]
-                                                            [weekIndex]) ==
-                                                    DateFormat('dd-MM-yyyy')
-                                                        .format(selectedDate)
-                                                ? widget.activeTextColor ??
-                                                    Colors.white
-                                                : listOfWeeks[ind][weekIndex]
-                                                        .isBefore(
-                                                            DateTime.now())
-                                                    ? widget.inactiveTextColor ??
-                                                        Colors.white
-                                                            .withOpacity(.2)
-                                                    : widget.disabledTextColor ??
-                                                        Colors.white,
-                                          ),
+                                          style: GoogleFonts.outfit(
+                                              color: DateFormat('dd-MM-yyyy')
+                                                          .format(listOfWeeks[
+                                                                  ind]
+                                                              [weekIndex]) ==
+                                                      DateFormat('dd-MM-yyyy')
+                                                          .format(selectedDate)
+                                                  ? widget.activeTextColor ??
+                                                      Colors.white
+                                                  : listOfWeeks[ind][weekIndex]
+                                                          .isBefore(widget
+                                                              .disabledFromDate)
+                                                      ? widget.inactiveTextColor ??
+                                                          Colors.white
+                                                              .withOpacity(.2)
+                                                      : widget.disabledTextColor ??
+                                                          Colors.white,
+                                              fontSize: 10.822.sp,
+                                              fontWeight: FontWeight.w600),
                                         ),
                                       ],
                                     ),
@@ -396,7 +392,7 @@ class _HorizontalWeekCalendarState extends State<HorizontalWeekCalendar> {
                 ],
                 options: CarouselOptions(
                   scrollPhysics: const ClampingScrollPhysics(),
-                  height: boxHeight,
+                  height: 47.7.h,
                   viewportFraction: 1,
                   enableInfiniteScroll: false,
                   reverse: true,
